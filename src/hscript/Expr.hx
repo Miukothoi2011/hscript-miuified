@@ -22,33 +22,34 @@
 package hscript;
 
 enum Const {
-	CInt( v : Int );
-	CFloat( f : Float );
-	CString( s : String );
+	CInt(v:Int);
+	CFloat(f:Float);
+	CString(s:String);
 	#if !haxe3
-	CInt32( v : haxe.Int32 );
+	CInt32(v:haxe.Int32);
 	#end
 }
 
 #if hscriptPos
 typedef Expr = {
-	var e : ExprDef;
-	var pmin : Int;
-	var pmax : Int;
-	var origin : String;
-	var line : Int;
+	var e:ExprDef;
+	var pmin:Int;
+	var pmax:Int;
+	var origin:String;
+	var line:Int;
 }
 enum ExprDef {
 #else
 typedef ExprDef = Expr;
 enum Expr {
 #end
-	EConst( c : Const );
-	EIdent( v : String );
-	EVar( n : String, ?t : CType, ?e : Expr );
-	EParent( e : Expr );
-	EBlock( e : Array<Expr> );
-	EField( e : Expr, f : String );
+	EConst(c:Const);
+	EIdent(v:String);
+	EImport(v:String, ?as:String); // I borrow from hscript-iris
+	EVar(n:String, ?t:CType, ?e:Expr, ?isConst:Bool);
+	EParent(e:Expr);
+	EBlock(e:Array<Expr>);
+	EField(e:Expr, f:String, ?s:Bool);
 	EBinop( op : String, e1 : Expr, e2 : Expr );
 	EUnop( op : String, prefix : Bool, e : Expr );
 	ECall( e : Expr, params : Array<Expr> );
@@ -63,13 +64,14 @@ enum Expr {
 	EArrayDecl( e : Array<Expr> );
 	ENew( cl : String, params : Array<Expr> );
 	EThrow( e : Expr );
-	ETry( e : Expr, v : String, t : Null<CType>, ecatch : Expr );
+	ETry( e : Expr, v : String, ?t : Null<CType>, ecatch : Expr );
 	EObject( fl : Array<{ name : String, e : Expr }> );
 	ETernary( cond : Expr, e1 : Expr, e2 : Expr );
 	ESwitch( e : Expr, cases : Array<{ values : Array<Expr>, expr : Expr }>, ?defaultExpr : Expr);
-	EDoWhile( cond : Expr, e : Expr);
-	EMeta( name : String, args : Array<Expr>, e : Expr );
-	ECheckType( e : Expr, t : CType );
+	EDoWhile(cond:Expr, e:Expr);
+	EMeta(name:String, args:Array<Expr>, e:Expr, ?haveColon:Bool);
+	ECheckType(e:Expr, ?t:CType);
+	ECast(e:Expr, ?t:CType);
 }
 
 typedef Argument = { name : String, ?t : CType, ?opt : Bool, ?value : Expr };

@@ -1,9 +1,10 @@
 {
-  "name": "hscript",
-  "url": "https://github.com/HaxeFoundation/hscript",
+  "name": "hscript-miuified",
+  "url": "https://github.com/Miukothoi2011/hscript-miuified",
   "license": "MIT",
   "description": "Haxe Script is a scripting engine for a subset of the Haxe language",
   "version": "2.5.0",
   "releasenote": "Haxe 4.2 compat and bug fixes",
-  "contributors": ["ncannasse","HaxeFoundation"]
+  "contributors": ["Miukothoi2011"],
+  "classPath": "src/"
 }
