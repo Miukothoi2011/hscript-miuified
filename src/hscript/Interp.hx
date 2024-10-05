@@ -148,7 +148,7 @@ class Interp {
 			var expr1:Dynamic = me.expr(e1);
 			return expr1 == null ? me.expr(e2) : expr1;
 		});
-		binops.set("...", function(e1, e2) return new #if (haxe_211 || haxe3) IntIterator #else IntIter #end(me.expr(e1),me.expr(e2)));
+		binops.set("...", function(e1, e2) return new InterpIterator(me, e1, e2));
 		binops.set("is", function(e1, e2) checkIs);
 		assignOp("+=", function(v1:Dynamic, v2:Dynamic) return v1 + v2);
 		assignOp("-=", function(v1:Float, v2:Float) return v1 - v2);
@@ -192,7 +192,7 @@ class Interp {
 		return cast types;
 	}
 	
-	function getClassOrEnum<T>(v:T):OneOfTwo<Class<T>, Enum<T>>
+	/*function getClassOrEnum<T>(v:T):OneOfTwo<Class<T>, Enum<T>>
 	{
 		var types = Type.getClass(v);
 		if (types == null) types = Type.getEnum(v);
@@ -206,6 +206,19 @@ class Interp {
 		if (types == null) types = Type.getEnumName(v);
 		
 		return types;
+	}*/
+	
+	function getFullField(e:Expr):String {
+		e = Tools.expr(e);
+		var ret:String = "";
+
+		switch (e) {
+			case EIdent(id): ret += id;
+			case EField(e, f): ret += "." + getFullField(e).substring(1) + "." + f;
+			default:
+		}
+
+		return ret.substring(1);
 	}
 
 	function assign(e1:Expr, e2:Expr):Dynamic {
@@ -216,22 +229,17 @@ class Interp {
 				if (l == null)
 					setVar(id, v)
 				else {
-					inline var isOfType = #if (haxe_ver >= 4.2) Std.isOfType #else Std.is #end;
+					/*inline var isOfType = #if (haxe_ver >= 4.2) Std.isOfType #else Std.is #end;
 					var types = resolveClassOrEnum(l.type.path);
 					
 					if (types != null) {
-						if (!isOfType(getClassOrEnum(v), types))
+						if (!isOfType(resolveClassOrEnum(v), types))
 							error(ECustom("The variable " + id + " isn't of type " + l.type.path));
-					}
-					
+					}*/
 					if (!l.const) l.r = v;
 				}
 			
 			case EField(e, f):
-				var e = if (e != null) e else null;
-				if (!isOfType(getClassOrEnum(v), getClassOrEnum(get(expr(e), f))) {
-					error(ECustom("The variable " + id + " isn't of type " + l.type.path));
-				}
 				v = set(expr(e), f, v);
 			
 			case EArray(e, index):
@@ -396,17 +404,10 @@ class Interp {
 	}
 
 	function resolve(id:String):Dynamic {
-		var l = locals.get(id);
-		if (l != null) return l.r;
-		
-		var v = variables.get(id);
-		if (v != null && variables.exists(id)) return v;
-		
-		var v = finalVariables.get(id);
-		if (v != null && finalVariables.exists(id)) return v;
-		
-		var i = imports.get(id);
-		if (i != null && imports.exists(id)) return i;
+		if (locals.exists(id)) return locals.get(id).r;
+		if (variables.exists(id)) return variables.get(id);
+		if (finalVariables.exists(id)) return finalVariables.get(id);
+		if (imports.exists(id)) return imports.get(id);
 		
 		error(EUnknownVariable(id));
 		return null;
@@ -452,7 +453,7 @@ class Interp {
 			case EBinop(op, e1, e2):
 				var fop = binops.get(op);
 				if (fop == null) error(EInvalidOp(op));
-				return fop(e1,e2);
+				return fop(e1, e2);
 			case EUnop(op, prefix, e):
 				switch (op) {
 					case "!": return expr(e) != true;
@@ -794,7 +795,7 @@ class Interp {
 	}
 
 	function get(o:Dynamic, f:String):Dynamic {
-		if ( o == null ) error(EInvalidAccess(f));
+		if (o == null) error(EInvalidAccess(f));
 		return {
 			#if php
 			// https://github.com/HaxeFoundation/haxe/issues/4915
@@ -815,7 +816,7 @@ class Interp {
 		return v;
 	}
 
-	function fcall(o:Dynamic, f:String, args:Array<Dynamic>):Dynamic {
+	inline function fcall(o:Dynamic, f:String, args:Array<Dynamic>):Dynamic {
 		return call(o, get(o, f), args);
 	}
 
