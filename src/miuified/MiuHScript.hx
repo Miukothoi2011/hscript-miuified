@@ -14,11 +14,7 @@ import hscript.Parser;
 @:access(hscript.Parser)
 class MiuHScript
 {
-	public static var _allInstance:Map<String, MiuHScript> = new Map();
-	
-	public var active:Bool;
-	
-	private var _destroy:Bool = false;
+	public var active:Bool = true; // useless.
 	
 	private var parser:Parser;
 	private var interp:Interp;
@@ -32,11 +28,7 @@ class MiuHScript
 	private var locals(get, never):Map<String, Dynamic>;
 	private var finalVariables(get, never):Map<String, Dynamic>;
 
-	public var id:Int = 0;
-	
-	public var returnValue:Dynamic;
-	
-	public var code:String;
+	//public var returnValue:Null<Dynamic>;
 	
 	public function new(?scriptFile:String, startExecute:Bool = true)
 	{
@@ -47,20 +39,16 @@ class MiuHScript
 		
 		interp = new Interp();
 		
-		this.active = true;
+		this.active = startExecute;
 		
 		preset();
 		
 		if (scriptFile != null && scriptFile.length > 0)
 		{
 			this.scriptFile = scriptFile;
-			_allInstance.set(scriptFile, this);
-			if (startExecute) returnValue = doFile(scriptFile);
+			doFile(scriptFile);
 		}
 	}
-	
-	public inline function setCode(code):String
-		return this.code = code;
 	
 	public function get_variables():Map<String, Dynamic>
 		return interp.variables;
@@ -84,7 +72,6 @@ class MiuHScript
 	{
 		if (locals.exists(name)) return true;
 		if (variables.exists(name)) return true;
-		if (finalVariables.exists(name)) return true;
 		return false;
 	}
 	
@@ -113,6 +100,7 @@ class MiuHScript
 				return true;
 			}
 		}
+
 		return false;
 	}
 	
@@ -162,7 +150,7 @@ class MiuHScript
 		return this;
 	}
 	
-	public function preset(?type:String = 'mini'):MiuHScript
+	public function preset(?type:String):MiuHScript
 	{
 		this.presetType = type;
 		if (type.length > 0 && type.toLowerCase() != 'none')
@@ -198,7 +186,7 @@ class MiuHScript
 		
 		var fileToStr:String = null;
 		
-		var getText:String->String = #if sys
+		inline var getText:String->String = #if sys
 			File.getContent
 		#elseif lime
 			lime.utils.Assets.getText

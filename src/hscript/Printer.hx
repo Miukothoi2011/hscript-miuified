@@ -97,8 +97,8 @@ class Printer {
 		}
 	}
 
-	function addType(t:CType ) {
-		if (t != null) {
+	function addType( t : CType ) {
+		if( t != null ) {
 			add(" : ");
 			type(t);
 		}
@@ -111,10 +111,10 @@ class Printer {
 		}
 		switch (#if hscriptPos e.e #else e #end) {
 			case EConst(c):
-				switch(c) {
-					case CInt(i): add(i);
-					case CFloat(f): add(f);
-					case CString(s): add('"'); add(s.split('"').join('\\"').split("\n").join("\\n").split("\r").join("\\r").split("\t").join("\\t")); add('"');
+				switch( c ) {
+				case CInt(i): add(i);
+				case CFloat(f): add(f);
+				case CString(s): add('"'); add(s.split('"').join('\\"').split("\n").join("\\n").split("\r").join("\\r").split("\t").join("\\t")); add('"');
 				}
 			case EIdent(v):
 				add(v);
@@ -332,7 +332,6 @@ class Printer {
 				add(" : ");
 				addType(t);
 				add(")");
-			default:
 		}
 	}
 
