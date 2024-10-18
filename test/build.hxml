@@ -1,0 +1,6 @@
+-m Main
+-L hscript-miuified
+-D hscriptPos
+-D HS_MIUIFIED_DEBUG
+--hl Main.hl
+--cmd hl Main.hl
